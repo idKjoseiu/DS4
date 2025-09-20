@@ -1,0 +1,191 @@
+body {
+  font-family: Arial, sans-serif;
+
+  /*background-image: url("fondos/ciudad.gif");*/
+  
+  background-color: #212830;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin :0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items:center;
+ 
+}
+
+.encabezado {
+  background-color: #29313b;
+  width: 100%;
+  height: 70px;
+  position: fixed;
+  top: 0;
+}
+
+.ParteLogo {
+  position: absolute;
+  background-color: #29313b;
+  width: 195px;
+  height: 50px;
+  left: 0px;
+  top:0px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding-top: 19px;
+}
+
+.logo img{
+  width: 150px;;
+  position: relative;
+  left: 35px;
+}
+.OpcLateral {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 180px;;
+  height: 100%;       
+  background-color: #29313b;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 80px 0px; 
+}
+
+.OpcLateral-link {
+  display: flex;
+  align-items: center;
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  padding: 10px 20px;
+  color: #f6f5f5;
+  background-color: #29313b;
+  text-decoration: none;
+  gap: 10px;
+}
+
+.OpcLateral-link span {
+  font-size: 26px;
+  color: #f6f5f5;
+  margin-right: 15px;
+
+}
+.OpcLateral-link:hover,
+.OpcLateral-link:active {
+  background-color: #39424f;
+}
+
+a {
+    color: rgb(246, 245, 245);
+    text-decoration: none; 
+  }
+  
+
+.registro {
+  background: #29313bde;
+  padding: 20px 20px;
+  border-radius: 13px;
+  width: 400px;
+  margin-top: 100px;
+
+  box-shadow: 0 4px 10px rgb(4, 221, 245);
+  animation: 3s infinite alternate parpadeo;
+
+}
+
+.subirArchivo{
+  display: inline-block;
+  
+  color: white;
+  font-weight: bold;
+  border-radius: 13px;
+  cursor: pointer;
+}
+.subirArchivo input[type="file"]{
+  width: 360px;  
+}
+
+input[type="file"]::file-selector-button {
+  background-color: #0ba5cc;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 8px 15px;
+
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #096177;
+}
+
+
+
+
+
+@keyframes parpadeo {
+  form{
+    box-shadow: 0 4px 10px rgb(4, 215, 239);
+  }
+
+  to {
+    box-shadow: 0 4px 10px rgb(3, 245, 176);
+  }
+  
+}
+
+.registro h1 {
+  font-size: 30px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #f6f5f5;
+}
+
+
+
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+}
+
+
+
+label {
+  font-weight: normal;
+  font-size: 18px;
+  color: #f6f5f5;
+}
+
+input {
+  padding: 8px;
+  border: 1px solid #eee7e7;
+  border-radius: 10px;
+  font-size: 14px;
+  
+}
+
+input:focus {
+  outline: none;
+  border-color: #0ba5cc;
+  box-shadow: 0 0 15px rgb(2, 185, 246);
+}
+
+button {
+  background-color: #0ba5cc;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #096177;
+  transform: scale(1.01);
+}
