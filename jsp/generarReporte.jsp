@@ -1,4 +1,4 @@
-<%@ page import="java.sql.*" %>
+<%@ page import="java.sql.*, java.time.LocalDate, java.time.LocalTime, java.time.format.DateTimeFormatter, java.util.Locale" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html lang="es">
@@ -42,13 +42,14 @@
             
             <a href="#" onclick="window.close(); return false;" class="btn btn-secondary">Volver</a>
         </div>
+        
 <%
-    // Obtener datos del formulario
+    //datos de la busqueda
     String codigo_marcacion = request.getParameter("codigo_marcacion");
     String fechaInicio = request.getParameter("fechaInicio");
     String fechaFin = request.getParameter("fechaFin");
 
-    // Para asegurar que la consulta incluye todo el día de la fecha final
+    //todo el dia de la fecha final
     String fechaFinAjustada = fechaFin + " 23:59:59";
 
     String url = "jdbc:mysql://localhost:3306/asistencia";
@@ -58,14 +59,11 @@
     Connection conn = null;
     ResultSet rs = null;
     PreparedStatement ps = null;
-    boolean hasResults = false;
 
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
         conn = DriverManager.getConnection(url, usuario, contrasena);
 
-        // --- SOLUCIÓN ---
-        // Se establece el idioma a español para la sesión actual de la base de datos.
         try (Statement stmt = conn.createStatement()) {
             stmt.execute("SET lc_time_names = 'es_ES'");
         }
@@ -73,7 +71,8 @@
         // Consulta SQL mejorada
         String sql = "SELECT " +
                      "DATE(fecha_hora) AS fecha, " +
-                     "DATE_FORMAT(fecha_hora, '%W') AS dia_semana, " +
+                     "DATE_FORMAT(fecha_hora, '%d-%m-%Y') AS fecha_formateada, " +
+                     "DATE_FORMAT(fecha_hora, '%W') AS dia_semana, " + 
                      "MIN(TIME(fecha_hora)) AS entrada, " +
                      "MAX(TIME(fecha_hora)) AS salida " +
                      "FROM asistencias " +
@@ -102,28 +101,73 @@
                 </thead>
                 <tbody>
 <%
-        while (rs.next()) {
-            hasResults = true;
-            
+        
+        // --- LÓGICA PARA TARDANZAS Y AUSENCIAS ---
+        int totalAusencias = 0;
+        int totalTardanzas = 0;
+        final LocalTime HORA_ENTRADA_OFICIAL = LocalTime.of(7, 0);
+
+        LocalDate fechaInicioDate = LocalDate.parse(fechaInicio);
+        LocalDate fechaFinDate = LocalDate.parse(fechaFin);
+        DateTimeFormatter formatoDiaSemana = DateTimeFormatter.ofPattern("EEEE", new Locale("es", "ES"));
+        DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        boolean hayMasResultados = rs.next();
+
+        for (LocalDate fechaIteracion = fechaInicioDate; !fechaIteracion.isAfter(fechaFinDate); fechaIteracion = fechaIteracion.plusDays(1)) {
+            LocalDate fechaResultado = null;
+            if (hayMasResultados) {
+                fechaResultado = rs.getDate("fecha").toLocalDate();
+            }
+
+            if (hayMasResultados && fechaIteracion.equals(fechaResultado)) {
+                //asistió
+                String entradaStr = rs.getString("entrada");
+                String tardanzaDisplay = "";
+
+                if (entradaStr != null) {
+                    LocalTime horaEntradaMarcada = LocalTime.parse(entradaStr);
+                    if (horaEntradaMarcada.isAfter(HORA_ENTRADA_OFICIAL)) {
+                        tardanzaDisplay = "Sí";
+                        totalTardanzas++;
+                    }
+                }
 %>
                     <tr>
-                        <td><%= rs.getString("fecha") %></td>
+                        <td><%= rs.getString("fecha_formateada") %></td>
                         <td><%= rs.getString("dia_semana") %></td>
-                        <td><%= rs.getString("entrada") %></td>
-                        <td></td> 
+                        <td><%= entradaStr %></td>
+                        <td><%= tardanzaDisplay %></td> 
                         <td><%= rs.getString("salida") %></td>
                         <td></td> 
                     </tr>
 <%
+                hayMasResultados = rs.next(); // Mover al siguiente registro
+            } else {
+                //no asistió
+                totalAusencias++;
+%>
+                    <tr>
+                        <td><%= fechaIteracion.format(formatoFecha) %></td>
+                        <td><%= fechaIteracion.format(formatoDiaSemana) %></td>
+                        <td></td>
+                        <td></td> 
+                        <td></td>
+                        <td>No Asistió</td> 
+                    </tr>
+<%
+            }
         }
 %>
                 </tbody>
             </table>
         </div>
+        <div class>  
+            <h4>Resumen de Cumplimientos</h4>
+            <p><strong>Total de Ausencias:</strong> <%= totalAusencias %></p>
+            <p><strong>Total de Tardanzas:</strong> <%= totalTardanzas %></p>
+        </div>
 <%
-        if (!hasResults) {
-            out.println("<div class='alert alert-info'>No se encontraron registros para los criterios seleccionados.</div>");
-        }
     } catch (Exception e) {
         out.println("<div class='alert alert-danger'>Error al generar el reporte: " + e.getMessage() + "</div>");
     } finally {
