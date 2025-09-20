@@ -1,5 +1,7 @@
+<%@ page import="java.sql.*" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
-<html lang = "es">
+<html lang="es">
     <head> 
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +40,7 @@
                 <span class="material-icons-outlined">person_add</span>
                 Registrarse
             </a>
-            <a href="reporte.html" class="OpcLateral-link">
+            <a href="reporte.jsp" class="OpcLateral-link">
                 <span class="material-icons-outlined">assignment</span>
                 Reporte
             </a>
@@ -59,7 +61,7 @@
             
             <h1 style="margin-top: 30px;"> Reporte de Asistencias</h1>
             
-            <form action="" method="post">
+            <form action="jsp/generarReporte.jsp" method="post" target="_blank">
                 <label>Desde:</label>
                 <input type="date" name="fechaInicio" required>
                 
@@ -71,8 +73,7 @@
                 
                 <button type="submit">Buscar</button>
             </form>
-
-        </div>
+        </div> 
     </body>
     
 </html>
