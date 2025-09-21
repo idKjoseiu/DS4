@@ -44,8 +44,8 @@
 
     <div class="contenedor-central">
         <div class="modo-selector">
-            <a href="registro.html" class="modo-btn">Registrar</a>
-            <a href="eliminar.html" class="modo-btn active">Eliminar</a>
+            <a href="registro.jsp" class="modo-btn">Registrar</a>
+            <a href="eliminar.jsp" class="modo-btn active">Eliminar</a>
         </div>
 
         <div class="registro">

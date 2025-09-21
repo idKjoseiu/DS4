@@ -1,4 +1,4 @@
-<%@ page import="java.sql.*, java.time.LocalDate, java.time.LocalTime, java.time.format.DateTimeFormatter, java.util.Locale" %>
+<%@ page import="java.sql.*, java.time.LocalDate, java.time.LocalTime, java.time.format.DateTimeFormatter, java.util.Locale, java.util.List, java.util.ArrayList" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html lang="es">
@@ -39,9 +39,11 @@
     <div class="container">
         <div class="superior">
             <h1>Resultados del Reporte</h1>
-            
-            <a href="#" onclick="window.close(); return false;" class="btn btn-secondary">Volver</a>
-        </div>
+            <div>
+                    <a href="#" onclick="window.close(); return false;" class="btn btn-secondary">Volver</a>
+                    <a href="#" onclick="mostrarGrafico();" class="btn btn-primary">Ver Gráfico</a>
+            </div>        
+    </div>
         
 <%
     //datos de la busqueda
@@ -59,6 +61,11 @@
     Connection conn = null;
     ResultSet rs = null;
     PreparedStatement ps = null;
+
+    
+    int totalAusencias = 0;
+    int totalTardanzas = 0;
+    int totalAsistenciasPuntuales = 0;
 
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -102,15 +109,13 @@
                 <tbody>
 <%
         
-        // tadanzas y ausencias
-        int totalAusencias = 0;
-        int totalTardanzas = 0;
         final LocalTime HORA_ENTRADA_OFICIAL = LocalTime.of(7, 0);
 
         LocalDate fechaInicioDate = LocalDate.parse(fechaInicio);
         LocalDate fechaFinDate = LocalDate.parse(fechaFin);
         DateTimeFormatter formatoDiaSemana = DateTimeFormatter.ofPattern("EEEE", new Locale("es", "ES"));
         DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
 
         boolean hayMasResultados = rs.next();
 
@@ -130,6 +135,8 @@
                     if (horaEntradaMarcada.isAfter(HORA_ENTRADA_OFICIAL)) {
                         tardanzaDisplay = "Sí";
                         totalTardanzas++;
+                    } else {
+                        totalAsistenciasPuntuales++;
                     }
                 }
 %>
@@ -162,10 +169,12 @@
                 </tbody>
             </table>
         </div>
-        <div class>  
+
+        <div>
             <h4>Resumen de Cumplimientos</h4>
             <p><strong>Total de Ausencias:</strong> <%= totalAusencias %></p>
             <p><strong>Total de Tardanzas:</strong> <%= totalTardanzas %></p>
+            <p><strong>Total de Asistencias Puntuales:</strong> <%= totalAsistenciasPuntuales %></p>
         </div>
 <%
     } catch (Exception e) {
@@ -177,5 +186,73 @@
     }
 %>
     </div>
+
+    <div id="graficoContainer" style="position: relative; width: 80vw; max-width: 600px; height: 400px; display:none; margin: 30px auto 0 auto;">
+            <canvas id="graficoAsistencias"></canvas>
+    </div>
+
+    
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    let miGrafico = null;
+
+    function mostrarGrafico() {
+        const container = document.getElementById('graficoContainer');
+        container.style.display = 'block';
+
+        // Desplaza cuadno se da a ver grafico
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Si el gráfico ya existe, no hacer nada más.
+        if (miGrafico) {
+            return;
+        }
+
+        const ctx = document.getElementById('graficoAsistencias').getContext('2d');
+        
+        miGrafico = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Asistencias Puntuales', 'Tardanzas', 'Ausencias'],
+                datasets: [{
+                    label: 'Resumen de Asistencia',
+                    data: [<%= totalAsistenciasPuntuales %>, <%= totalTardanzas %>, <%= totalAusencias %>],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.7)',  // Verde para puntuales
+                        'rgba(255, 193, 7, 0.7)',   // Amarillo para tardanzas
+                        'rgba(220, 53, 69, 0.7)'    // Rojo para ausencias
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#f6f5f5' // Color del texto de la leyenda
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Resumen de Asistencia del Periodo',
+                        color: '#f6f5f5', // Color del título
+                        font: { size: 18 }
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+
 </body>
 </html>

@@ -70,7 +70,7 @@
         }
 
         String sql = "SELECT " +
-                     "codigo_marcacion, " +
+                     "CAST(codigo_marcacion AS UNSIGNED) AS codigo_marcacion, " +
                      "DATE(fecha_hora) AS fecha, " +
                      "DATE_FORMAT(fecha_hora, '%W') AS dia_semana, " +
                      "MIN(TIME(fecha_hora)) AS entrada, " +
