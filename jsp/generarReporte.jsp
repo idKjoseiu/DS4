@@ -102,7 +102,7 @@
                 <tbody>
 <%
         
-        // --- LÓGICA PARA TARDANZAS Y AUSENCIAS ---
+        // tadanzas y ausencias
         int totalAusencias = 0;
         int totalTardanzas = 0;
         final LocalTime HORA_ENTRADA_OFICIAL = LocalTime.of(7, 0);
@@ -148,7 +148,7 @@
                 totalAusencias++;
 %>
                     <tr>
-                        <td><%= fechaIteracion.format(formatoFecha) %></td>
+                        <td><%= fechaIteracion.format(formatoFecha)+" * " %></td>
                         <td><%= fechaIteracion.format(formatoDiaSemana) %></td>
                         <td></td>
                         <td></td> 

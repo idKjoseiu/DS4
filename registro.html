@@ -29,10 +29,10 @@
         <div class =ParteLogo>
 
             <div class ="logo">
-                <img src="logo/iconoHorizontal.png " alt ="logo">
+                <img src="css\logo\iconoHorizontal.png" alt ="logo">
             </div>
         </div>
-        <div>
+        
             
     <nav class="OpcLateral">
         <a href="registro.html" class="OpcLateral-link">
@@ -44,47 +44,52 @@
             Reporte
         </a>
     </nav>
-        </div>
-        
-        <div class="registro">
-            <h1>Registro de personal</h1>
-            <form action="jsp/guardarPersonal.jsp" method="post">
-                
-                <label for="cedula">Cédula</label>
-                <input type="text" pattern="[0-9]{1}-[0-9]{4}-[0-9]{4}" title="Solo se aceptan numeros"  maxlength="15" id="cedula" name="cedula" placeholder="00-0000-0000" required>
-                <script>
-                        const cedula = document.getElementById("cedula");
 
-                        cedula.addEventListener("input", function () {
+    <div class="contenedor-central">
+            <div class="modo-selector">
+                    <a href="registro.html" class="modo-btn active">Registrar</a>
+                    <a href="eliminar.jsp" class="modo-btn">Eliminar</a>
+            </div>
+            
+            <div class="registro">
+                <h1>Registro de personal</h1>
+                <form action="jsp/guardarPersonal.jsp" method="post">
                         
-                        let valor = this.value.replace(/\D/g, "");
-
-                        // Vamos construyendo el valor con guiones
-                        if (valor.length > 1 && valor.length <= 6) {
-                            valor = valor.slice(0, 1) + "-" + valor.slice(1);
-                        } else if (valor.length > 6) {
-                            valor = valor.slice(0, 1) + "-" + valor.slice(1, 5) + "-" + valor.slice(5, 9);
-                        }
-
-                        this.value = valor;
-                        });
-                </script>
-                <label for="nombre">Nombre:</label>
-                <input type="text" pattern="[^0-9]*" title="Solo se permiten letras" maxlength="20"   id="nombre" name="nombre" placeholder="Escribe tu nombre" required>
-                
-                <label for="apellido">Apellido:</label>
-                <input type="text"  pattern="[^0-9]*" title="Solo se permiten letras" maxlength="20" id="apellido" name="apellido" placeholder="Escribe tu apellido" autocomplete="family-name" required>
-                
-                <label for="codigo_marcacion">Código de Marcación:</label>
-                <input type="password" pattern="[0-9]+" maxlength="4"  style="width: 50px" id="codigo_marcacion" name="codigo_marcacion" placeholder="••••" required>
-                
-                
-                    <button type="submit">Registrar</button>
-            </form>
-        </div>
+                        <label for="cedula">Cédula</label>
+                        <input type="text" pattern="[0-9]{1}-[0-9]{4}-[0-9]{4}" title="Formato: 1-2345-6789"  maxlength="11" id="cedula" name="cedula" placeholder="0-0000-0000" required>
+                        <script>
+                                const cedula = document.getElementById("cedula");
+        
+                                cedula.addEventListener("input", function () {
+                                
+                                let valor = this.value.replace(/\D/g, "");
+        
+                                // Formato X-XXXX-XXXX
+                                if (valor.length > 1 && valor.length <= 5) {
+                                    valor = valor.slice(0, 1) + "-" + valor.slice(1);
+                                } else if (valor.length > 5) {
+                                    valor = valor.slice(0, 1) + "-" + valor.slice(1, 5) + "-" + valor.slice(5, 9);
+                                }
+        
+                                this.value = valor;
+                                });
+                        </script>
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" pattern="[^0-9]*" title="Solo se permiten letras" maxlength="20"   id="nombre" name="nombre" placeholder="Escribe tu nombre" required>
+                        
+                        <label for="apellido">Apellido:</label>
+                        <input type="text"  pattern="[^0-9]*" title="Solo se permiten letras" maxlength="20" id="apellido" name="apellido" placeholder="Escribe tu apellido" autocomplete="family-name" required>
+                        
+                        <label for="codigo_marcacion">Código de Marcación:</label>
+                        <input type="password" pattern="[0-9]+" maxlength="4"  style="width: 50px" id="codigo_marcacion" name="codigo_marcacion" placeholder="••••" required>
+                        
+                        
+                            <button type="submit">Registrar</button>
+                </form>
+            </div>
+    </div>
         
           <!--a href="https://www.biblia.es/reina-valera-1960.php">Biblia</a-->
       
-    
     </body>
 </html>
