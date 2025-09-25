@@ -1,108 +1,144 @@
 <!DOCTYPE html>
 <html lang="es">
-    <head> 
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Buscar Asistencia</title>
-        
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-        <link rel = "stylesheet" href = "css/styles.css">  
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buscar Asistencia</title>
 
-        <!-- fuente de google-->    
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
 
-        <!-- iconos-->
-        <link rel="icon" href="css/logo/incono.png" type="image/png"> 
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined&display=swap" rel="stylesheet">
+    <!-- fuente de google-->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
 
-    </head>
-    
-    <body> 
+    <!-- iconos-->
+    <link rel="icon" href="css/logo/incono.png" type="image/png" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined&display=swap"
+      rel="stylesheet"
+    />
+  </head>
 
-         <div class ="encabezado">
+  <body>
+    <div class="encabezado"></div>
+    <div class="ParteLogo">
+      <div class="logo">
+        <img src="css\logo\iconoHorizontal.png" alt="logo" />
+      </div>
+    </div>
 
+    <nav class="OpcLateral">
+      <a href="registro.jsp" class="OpcLateral-link">
+        <span class="material-icons-outlined">person_add</span>
+        Registrarse
+      </a>
+      <a href="reporte.html" class="OpcLateral-link">
+        <span class="material-icons-outlined">assignment</span>
+        Reporte
+      </a>
+    </nav>
 
+    <div class="contenedor-central">
+      <div class="modo-selector">
+        <a href="reporte.html" class="modo-btn">Reportes</a>
+        <a href="jsp/agregarDiasL.jsp" class="modo-btn active">Dias Libres</a>
+      </div>
+    </div>
+
+    <div class="registro">
+      <form
+        action="jsp/procesarArchivo.jsp"
+        id="formArchivo"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <div class="subirArchivo">
+          <input
+            type="file"
+            id="archivo"
+            name="archivo"
+            accept=".dat"
+            required
+          />
+          <center>
+            <button style="margin: 5px" type="submit">Subir Archivo</button>
+            <hr />
+          </center>
         </div>
-        <div class =ParteLogo>
+      </form>
 
-            <div class ="logo">
-                <img src="css\logo\iconoHorizontal.png" alt ="logo">
-            </div>
-            
+      <h1>Reporte de Asistencias</h1>
 
+      <form
+        id="Reporte"
+        action="jsp/generarReporte.jsp"
+        method="post"
+        target="_blank"
+      >
+        <div class="d-flex align-items-center gap-2">
+          <label>Desde:</label>
+          <input style="width: 120px" type="date" name="fechaInicio" required />
+
+          <label>Hasta:</label>
+          <input style="width: 120px" type="date" name="fechaFin" required />
         </div>
+        <br />
+        <div>
+          <label>Código de Marcación</label>
+          <input
+            style="width: 70px"
+            type="text"
+            id="codigo_marcacion"
+            name="codigo_marcacion"
+            placeholder="0000"
+          />
+        </div>
+        <center>
+          <div>
+            <button type="submit" name="accion" value="individual">
+              Buscar
+            </button>
+            <button type="submit" name="accion" value="general">
+              Búsqueda General
+            </button>
+          </div>
+        </center>
+      </form>
+      <script>
+        document
+          .getElementById("Reporte")
+          ?.addEventListener("submit", function (e) {
+            const accion = e.submitter.value; //saber que boton se usa
+            const codigo = document.getElementById("codigo_marcacion");
+            const form = e.target;
 
-        <nav class="OpcLateral">
-            <a href="registro.jsp" class="OpcLateral-link">
-                <span class="material-icons-outlined">person_add</span>
-                Registrarse
-            </a>
-            <a href="reporte.html" class="OpcLateral-link">
-                <span class="material-icons-outlined">assignment</span>
-                Reporte
-            </a>
-        </nav>
-        
-        <div class = "registro">
-
-            <form action="jsp/procesarArchivo.jsp" id="formArchivo" method="post" enctype="multipart/form-data">
-                <div class ="subirArchivo">
-                    <input type="file" id="archivo" name="archivo" accept=".dat" required>
-                    <center> 
-                    
-                    <button style="margin:5px" type="submit">Subir Archivo</button>
-                    <hr>
-                    </center>
-                </div>
-            </form>
-            
-            <h1> Reporte de Asistencias</h1>
-            
-            <form id="Reporte" action="jsp/generarReporte.jsp" method="post" target="_blank">
-            
-                <div class="d-flex align-items-center gap-2">
-                    <label>Desde:</label>
-                    <input style="width: 120px;" type="date" name="fechaInicio" required>
-                    
-                    <label>Hasta:</label>
-                    <input  style="width: 120px;" type="date" name="fechaFin" required>
-                </div>
-                <br>
-                <div>
-                    <label>Código de Marcación</label>
-                    <input  style="width: 70px;" type="text" id="codigo_marcacion" name="codigo_marcacion" placeholder="0000">
-                </div>
-                <center>
-                <div>
-                        <button type="submit" name="accion" value="individual">Buscar</button>
-                        <button type="submit" name="accion" value="general">Búsqueda General</button>
-                </div>
-                </center>
-
-                </form>
-                    <script>
-                        document.getElementById("Reporte")?.addEventListener("submit", function(e) {
-                            const accion = e.submitter.value; //saber que boton se usa
-                            const codigo = document.getElementById("codigo_marcacion");
-                            const form = e.target;
-
-                            if (accion === "individual") {
-                                form.action = "jsp/generarReporte.jsp";
-                                // si es individual, el código es obligatorio
-                                if (!codigo.value.trim()) {
-                                    e.preventDefault();
-                                    alert("Por favor ingresa el código de marcación.");
-                                    codigo.focus();
-                                }
-                            } else if (accion === "general") {
-                                form.action = "jsp/reporteGeneral.jsp";
-                                // si es general, no debe ser obligatorio
-                                codigo.value = ""; // limpiar si alguien escribió algo
-                            }
-                        });
-                    </script>
-        </div> 
-    </body>
-    
+            if (accion === "individual") {
+              form.action = "jsp/generarReporte.jsp";
+              // si es individual, el código es obligatorio
+              if (!codigo.value.trim()) {
+                e.preventDefault();
+                alert("Por favor ingresa el código de marcación.");
+                codigo.focus();
+              }
+            } else if (accion === "general") {
+              form.action = "jsp/reporteGeneral.jsp";
+              // si es general, no debe ser obligatorio
+              codigo.value = ""; // limpiar si alguien escribió algo
+            }
+          });
+      </script>
+    </div>
+  </body>
 </html>

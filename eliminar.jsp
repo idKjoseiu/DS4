@@ -32,7 +32,7 @@
     </div>
 
     <nav class="OpcLateral">
-        <a href="registro.html" class="OpcLateral-link">
+        <a href="registro.jsp" class="OpcLateral-link">
             <span class="material-icons-outlined">person_add</span>
             Registrarse
         </a>
@@ -75,7 +75,7 @@
     <%@ page import="java.sql.*" pageEncoding="UTF-8" %>
 
 <%
-
+    request.setCharacterEncoding("UTF-8");
     String cedula = request.getParameter("cedula");
     if (cedula != null && !cedula.trim().isEmpty()) {
 

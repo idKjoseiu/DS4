@@ -77,13 +77,14 @@
             
             <div class="mt-3">
                 <%
+                    request.setCharacterEncoding("UTF-8");
                     String cedula = request.getParameter("cedula");
                     if (cedula != null) {
                         String nombre = request.getParameter("nombre");
                         String apellido = request.getParameter("apellido");
                         String codigo_marcacion = request.getParameter("codigo_marcacion");
 
-                        String url = "jdbc:mysql://localhost:3306/Asistencia";
+                        String url = "jdbc:mysql://localhost:3306/asistencia";
                         String usuario = "root";
                         String contrasena = "";
 
