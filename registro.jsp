@@ -29,7 +29,7 @@
     
     <nav class="OpcLateral">
         <a href="registro.jsp" class="OpcLateral-link">
-            <span class="material-icons-outlined">person_add</span>
+            <span class="material-icons">person_add</span>
             Registrarse
         </a>
         <a href="reporte.html" class="OpcLateral-link">

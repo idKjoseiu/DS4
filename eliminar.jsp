@@ -33,7 +33,7 @@
 
     <nav class="OpcLateral">
         <a href="registro.jsp" class="OpcLateral-link">
-            <span class="material-icons-outlined">person_add</span>
+            <span class="material-icons">person_add</span>
             Registrarse
         </a>
         <a href="reporte.html" class="OpcLateral-link">
@@ -42,7 +42,7 @@
         </a>
     </nav>
 
-    <div class="contenedor-central">
+    <div class="contenedor-central" style = "top: -130px; position: relative;">
         <div class="modo-selector">
             <a href="registro.jsp" class="modo-btn">Registrar</a>
             <a href="eliminar.jsp" class="modo-btn active">Eliminar</a>
