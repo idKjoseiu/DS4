@@ -21,37 +21,44 @@ body {
   height: 70px;
   position: fixed;
   top: 0;
+  left: 0;
+  z-index: 1000;
 }
 
 .ParteLogo {
-  position: absolute;
+  position: fixed;
   background-color: #29313b;
   width: 195px;
-  height: 50px;
-  left: 0px;
-  top:0px;
-  z-index: 2;
+  height: 70px; /* Igual que el encabezado */
+  left: 0;
+  top: 0;
+  z-index: 1001;
   display: flex;
   align-items: center;
-  padding-top: 19px;
+  justify-content: center;
+  padding: 0;
 }
 
-.logo img{
-  width: 150px;;
+.logo img {
+  width: 150px;
   position: relative;
-  left: 35px;
-}
-.OpcLateral {
-  position: absolute;
-  top: 0;
   left: 0;
-  width: 180px;;
-  height: 100%;       
+}
+
+.OpcLateral {
+  position: fixed;
+  top: 70px; /* Debajo del encabezado y logo */
+  left: 0;
+  width: 195px;
+  height: calc(100vh - 70px); /* Ocupa toda la altura menos el encabezado */
   background-color: #29313b;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 80px 0px; 
+  padding: 20px 0px;
+  z-index: 999;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .OpcLateral-link {
@@ -213,5 +220,6 @@ input:focus {
   align-items: center;
   display: flex;
   flex-direction: column;
-  margin-top: 70px; 
+  margin: 80px 900px  100px; /* Centrado horizontal y espacio arriba para el encabezado */
+  max-width: 700px; /* Opcional: limita el ancho si lo deseas */
 }

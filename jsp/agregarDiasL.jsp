@@ -1,4 +1,4 @@
-<%@ page import ="java.sql.*" %>
+
 <%@ page contentType = "text/html;charset=UTF-8" %>
 
 <!DOCTYPE html>
@@ -50,23 +50,107 @@
     <div class = "registro" style = "width: 100%;">
         <h1> Gestión de Dias libres</h1>
         <hr style = "color: white;">
-            <form  methon = "post">
+            <form id = "FormularioDias"  method = "post">
             <div style="display: flex; gap: 10px; align-items: center;">
                 <label for = "dia"> Dia: </label>
-                <input type = "date" name = "dia_libre"  id = "dia_libre" placeholder="Ingrese el dia libre" required>
+                <input type = "date" name = "dia_libre"  id = "dia_libre" placeholder="Ingrese el dia libre">
             
                 <label for = "dia"> Detalles: </label>
-                <input style ="width: 300px;" type = "text" name = "detalles" id = "detalles" maxlength=50 placeholder = "Ingrese detalles del dia libre" required>
+                <input style ="width: 300px;" type = "text" name = "detalles" id = "detalles" maxlength=50 placeholder = "Ingrese detalles del dia libre">
             </div>
             <br>
+            <center>
             <div>
                 <button type = "submit" class="btn btn-primary" name = "accion" value = "agregar"> Agregar </button>
                 <button type = "submit" class ="btn btn-secondary" name = "accion" value = "verDias"> Ver dias libres </button>   
             </div>
-            
+             </center>
+
             </form>   
             <hr style = "color: white; border: 2px solid;">
         
+
+            <script>
+                document.getElementById("FormularioDias").addEventListener("submit", function (e) {
+                    const accion = e.submitter.value;
+                    const dia = document.getElementById("dia_libre");
+                    const detalles = document.getElementById("detalles");
+                    const form = e.target;
+
+                    //Busca si ya existe una alerta en el formulario
+                    let alerta = document.getElementById("mensaje-alerta");
+
+                    if (!alerta) {
+                        alerta = document.createElement("div");
+                        alerta.id = "mensaje-alerta";
+                        form.appendChild(alerta);
+                    }
+                    
+                    if (accion === "verDias") {
+                        form.action = "verDiasLibres.jsp";
+                        form.target = "_blank"; // Abrir en una nueva pestaña
+                        form.method = "post";
+                    }
+                    else if (accion == "agregar"){
+                        if (!dia.value.trim() || !detalles.value.trim()) {
+                            e.preventDefault();
+                            alerta.className = "alert alert-danger";
+                            alerta.textContent = "Por favor, complete todos los campos antes de enviar el formulario.";
+                            dia.focus();
+                        }else {
+                            alerta.textContent = null; // Limpiar el mensaje de alerta si todo está bien
+                            
+                        }
+                        
+                    }
+                });
+            </script>
+        
+    <%@ page import ="java.sql.*" %>
+    <%
+        request.setCharacterEncoding("UTF-8");
+        String accion = request.getParameter("accion");
+        String dia = request.getParameter("dia_libre");
+        String detalles = request.getParameter("detalles");
+
+        if ("agregar".equals(accion) && dia != null && detalles != null) {
+            String url = "jdbc:mysql://localhost:3306/asistencia";
+            String usuario = "root";
+            String contrasena = "";
+
+            Connection con = null;
+            PreparedStatement ps = null;
+
+            try{
+                 Class.forName("com.mysql.cj.jdbc.Driver");
+                 con = DriverManager.getConnection (url, usuario, contrasena);
+
+                 String sql = "INSERT INTO dias_libres ( fecha, detalle) VALUES (?, ?)";
+                 ps = con.prepareStatement(sql);
+                 ps.setString(1, dia);
+                 ps.setString(2, detalles);
+                
+                int filas = ps.executeUpdate();
+                if (filas > 0) {
+                    %>
+                        <div class = "alert alert-success"> Fecha registrada con éxito. </div>
+                    <%
+                }else {
+                    %>
+                        <div class = "alert alert-danger"> Error al registrar la fecha. </div>
+                <%
+                }
+
+            } catch (Exception e) {
+                %>
+                    <div class = "alert alert-danger"> Errot: <%= e.getMessage() %></div>
+                <%
+            } finally {
+                if (ps != null) try { ps.close();} catch (Exception ex) {}
+                if (con != null) try { con.close();} catch (Exception ex) {}
+            }
+        }
+    %>
 
     </div>
     </div>

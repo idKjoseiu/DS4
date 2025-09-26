@@ -104,7 +104,9 @@
                     // si es individual, el código es obligatorio
                     if (!codigo.value.trim()) {
                         e.preventDefault();
-                        alert("Por favor ingresa el código de marcación.");
+                        const alerta = document.createElement("div");
+                        alerta.className = "alert alert-info";
+                        alerta.textContent = "Por favor ingresa el código de marcación.";
                         codigo.focus();
                     }
                 } else if (accion === "general") {
