@@ -6,19 +6,15 @@
     <title>Eliminar Registro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
-    <!-- fuente de google-->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
     <link rel="icon" href="logo/incono.png" type="image/png">
-
-    <!-- Iconos -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
 </head>
 <style>
-    body{
+    body {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -28,7 +24,7 @@
     <div class="encabezado"></div>
     <div class="ParteLogo">
         <div class="logo">
-            <img src="css\logo\iconoHorizontal.png" alt="logo">
+            <img src="css/logo/iconoHorizontal.png" alt="logo">
         </div>
     </div>
 
@@ -54,12 +50,10 @@
             <form action="eliminar.jsp" method="post">
                 <label for="cedula">Cédula</label>
                 <input type="text" pattern="[0-9]{1}-[0-9]{4}-[0-9]{4}" title="Formato: 1-2345-6789" maxlength="11" id="cedula" name="cedula" placeholder="0-0000-0000" required>
-                 <script>
-                    
+                <script>
                     const cedula = document.getElementById("cedula");
                     cedula.addEventListener("input", function () {
                         let valor = this.value.replace(/\D/g, "");
-                        
                         if (valor.length > 1 && valor.length <= 5) {
                             valor = valor.slice(0, 1) + "-" + valor.slice(1);
                         } else if (valor.length > 5) {
@@ -75,12 +69,70 @@
 
     <div id="resultados-container" style="width:100%; max-width:700px; margin:0 auto; margin-top:-120px; height:350px; overflow-y:auto;">
         
-        <% 
-        // Lógica de búsqueda y mensajes
+        <%
         request.setCharacterEncoding("UTF-8");
         String cedula = request.getParameter("cedula");
-        if (cedula != null && !cedula.trim().isEmpty()) {
+        String accion = request.getParameter("accion");
+        
+        if ("eliminar".equals(accion)) {
+            String cedulaEliminar = request.getParameter("cedula");
+            Connection conn = null;
+            PreparedStatement psDel = null;
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/asistencia", "root", "");
+                String sqlDelete = "DELETE FROM personal WHERE cedula=?";
+                psDel = conn.prepareStatement(sqlDelete);
+                psDel.setString(1, cedulaEliminar);
+                int filas = psDel.executeUpdate();
+                if (filas > 0) {
+                    out.println("<div class='alert alert-success'>Registro eliminado correctamente.</div>");
+                } else {
+                    out.println("<div class='alert alert-warning'>No se encontró el registro para eliminar.</div>");
+                }
+            } catch (Exception e) {
+                out.println("<div class='alert alert-danger'>Error al eliminar: " + e.getMessage() + "</div>");
+            } finally {
+                if (psDel != null) try { psDel.close(); } catch (SQLException e) {}
+                if (conn != null) try { conn.close(); } catch (SQLException e) {}
+            }
+        } // fin eliminar
+        
+        if ("Guardar".equals(accion)) {
+            String cedulaOriginal = request.getParameter("cedulaOriginal");
+            String Nuevacedula = request.getParameter("Nuevacedula");
+            String nombre = request.getParameter("nombre");
+            String apellido = request.getParameter("apellido");
+            String codigo = request.getParameter("codigo_marcacion");
 
+            Connection conn = null;
+            PreparedStatement psAC = null;
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/asistencia", "root", "");
+                String sqlUpdate = "UPDATE personal SET cedula=?, nombre=?, apellido=?, codigo_marcacion=? WHERE cedula=?";
+                psAC = conn.prepareStatement(sqlUpdate);
+                psAC.setString(1, Nuevacedula);
+                psAC.setString(2, nombre);
+                psAC.setString(3, apellido);
+                psAC.setString(4, codigo);
+                psAC.setString(5, cedulaOriginal);
+
+                int filas = psAC.executeUpdate();
+                if (filas > 0) {
+                    out.println("<div class='alert alert-success'>Registro actualizado correctamente.</div>");
+                } else {
+                    out.println("<div class='alert alert-danger'>No se pudo actualizar el registro.</div>");
+                }
+            } catch (SQLException e) {
+                out.println("<div class='alert alert-danger'>Error al actualizar: " + e.getMessage() + "</div>");
+            } finally {
+                if (psAC != null) try { psAC.close(); } catch (SQLException e) {}
+                if (conn != null) try { conn.close(); } catch (SQLException e) {}
+            }
+
+            //busca el registro
+        } else if (cedula != null && !cedula.trim().isEmpty()) {
             String url = "jdbc:mysql://localhost:3306/asistencia";
             String usuario = "root";
             String contrasena = "";
@@ -96,7 +148,6 @@
                 String sql = "SELECT cedula, nombre, apellido, codigo_marcacion FROM personal WHERE cedula = ?";
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, cedula);
-
                 rs = ps.executeQuery();
         %>
             <hr style="border-color: #f6f5f5;">
@@ -105,7 +156,7 @@
                 if (rs.next()) {
         %>
             <div class="table-responsive">
-                <table class="table table-striped table-dark">
+                <table class="table table-striped table-dark rounded-3 overflow-hidden">
                     <thead>
                         <tr>
                             <th>Cédula</th>
@@ -125,8 +176,7 @@
                                 <div class="d-flex gap-2">
                                     <form method="post" action="eliminar.jsp">
                                         <input type="hidden" name="cedula" value="<%= rs.getString("cedula") %>">
-                                        <button style="height: 38px;" type ="submit" name="accion" value="editar" class="btn btn-warning"action="Editar">Editar</button>
-                                        
+                                        <button style="height: 38px;" type="submit" name="accion" value="editar" class="btn btn-warning">Editar</button>
                                     </form>
                                     <form method="post" action="eliminar.jsp" onsubmit="return confirm('¿Estás seguro de eliminar este registro?');" class="d-inline">
                                         <input type="hidden" name="cedula" value="<%= rs.getString("cedula") %>">
@@ -139,62 +189,45 @@
                 </table>
             </div>
         <%
-                String accion = request.getParameter("accion");
-                if ("editar".equals(accion)){
-        %>
-                    <div class='alert alert-success'>Disponible pronto.</div>
-        <%
-                    if ("actualizar".equals(accion)) {
-                        String nombre = request.getParameter("nombre");
-                        String apellido = request.getParameter("apellido");
-                        String codigo = request.getParameter("codigo_marcacion");
-                        try {
-                            String sqlUpdate = "UPDATE personal SET nombre=?, apellido=?, codigo_marcacion=? WHERE cedula=?";
-                            ps = conn.prepareStatement(sqlUpdate);
-                            ps.setString(1, nombre);
-                            ps.setString(2, apellido);
-                            ps.setString(3, codigo);
-                            ps.setString(4, cedula);
+                    if ("editar".equals(accion)) {
+                        String cedulaOriginal = request.getParameter("cedula");
+        %>            
+                        <div class="border border-secondary rounded p-3 bg-dark text-white">
+                            <h6>Ingrese sus nuevos datos</h6>
+                            <form id="actualizarFORM" method="post" action="eliminar.jsp">
+                                <div class="d-flex align-items-center gap-3">
+                                    <input type="hidden" name="cedulaOriginal" value="<%= cedulaOriginal %>">
+                                    <label for="Nuevacedula">Cédula</label>
+                                    <input style="width: 100px;" type="text" pattern="[0-9]{1}-[0-9]{4}-[0-9]{4}" title="Formato: 1-2345-6789" maxlength="11" id="Nuevacedula" name="Nuevacedula" value="<%= rs.getString("cedula") %>">
 
-                            int filas = ps.executeUpdate();
-                            if (filas > 0) {
-                                out.println("<div class='alert alert-success'>Registro actualizado correctamente.</div>");
-                            } else {
-                                out.println("<div class='alert alert-danger'>No se pudo actualizar el registro.</div>");
-                            }
-                        } catch (SQLException e) {
-                            out.println("<div class='alert alert-danger'>Error al actualizar el registro: " + e.getMessage() + "</div>");
-                        }
-                    }
-                } else if ("eliminar".equals(accion)){
-                    try {
-                        String eliminarSql =" DELETE FROM personal WHERE cedula = ?";
-                        ps = conn.prepareStatement(eliminarSql);
-                        ps.setString(1, cedula);
-                        int filas = ps.executeUpdate();
-                        if (filas > 0) {
-                            out.println("<div class='alert alert-success'>Registro eliminado correctamente.</div>");
-                        } else {
-                            out.println("<div class='alert alert-danger'>No se pudo eliminar el registro.</div>");
-                        }
-                    }catch (SQLException e) {
-                        out.println("<div class='alert alert-danger'>Error al eliminar el registro: " + e.getMessage() + "</div>");
-                    }    
-                }
+                                    <label for="nombre">Nombre</label>
+                                    <input style="width: 150px;" type="text" maxlength="20" id="nombre" name="nombre" value="<%= rs.getString("nombre") %>">
+                                </div>
+
+                                <div class="d-flex align-items-center gap-3">
+                                    <label for="apellido">Apellido</label>
+                                    <input style="width: 150px;" type="text" maxlength="20" id="apellido" name="apellido" value="<%= rs.getString("apellido") %>">
+
+                                    <label for="codigo_marcacion">Código</label>
+                                    <input type="text" maxlength="4" style="width: 50px" id="codigo_marcacion" name="codigo_marcacion" value="<%= rs.getString("codigo_marcacion") %>">
+
+                                    <button type="submit" class="btn btn-success btn-lg" name="accion" value="Guardar">Guardar</button>
+                                </div>
+                            </form>
+                        </div>
+        <%
+                    } // fin editar
                 } else {
-                    out.println("<div class='alert alert-danger'><center>No se encontró personal con la cédula proporcionada.</center></div>");
+                    out.println("<div class='alert alert-warning'>No se encontró personal con la cédula: " + cedula + "</div>");
                 }
+                rs.close();
+                ps.close();
+                conn.close();
             } catch (Exception e) {
-                out.println("<div class='alert alert-danger'>Error al buscar el registro: " + e.getMessage() + "</div>");
-                e.printStackTrace(new java.io.PrintWriter(out));
-            } finally {
-                if (rs != null) try { rs.close(); } catch (SQLException e) { /* ignorado */ }
-                if (ps != null) try { ps.close(); } catch (SQLException e) { /* ignorado */ }
-                if (conn != null) try { conn.close(); } catch (SQLException e) { /* ignorado */ }
+                out.println("<div class='alert alert-danger'>Error en búsqueda: " + e.getMessage() + "</div>");
             }
-        } // fin del if (cedula != null)
+        } // fin else if cedula
         %>
     </div>
-    
 </body>
 </html>

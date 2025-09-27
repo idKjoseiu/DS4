@@ -127,7 +127,7 @@
         } 
 %>
         <div class="table-responsive">
-            <table class="table table-striped table-dark">
+            <table class="table table-striped table-dark rounded-3 overflow-hidden">
                 <thead>
                     <tr>
                         <th>Fecha</th>
