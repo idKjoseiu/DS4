@@ -38,7 +38,7 @@
 <body>
     <div class="container">
         <div class="superior">
-            <h1>Resultados del Reporte</h1>
+            <h2>Resultados del Reporte</h2>
             <div>
                     <a href="#" onclick="window.close(); return false;" class="btn btn-secondary">Volver</a>
                     <a href="#" onclick="mostrarGrafico();" class="btn btn-primary">Ver Gráfico</a>
@@ -75,17 +75,19 @@
             stmt.execute("SET lc_time_names = 'es_ES'");
         }
 
-        // Consulta SQL mejorada
         String sql = "SELECT " +
-                     "DATE(fecha_hora) AS fecha, " +
-                     "DATE_FORMAT(fecha_hora, '%d-%m-%Y') AS fecha_formateada, " +
-                     "DATE_FORMAT(fecha_hora, '%W') AS dia_semana, " + 
-                     "MIN(TIME(fecha_hora)) AS entrada, " +
-                     "MAX(TIME(fecha_hora)) AS salida " +
-                     "FROM asistencias " +
-                     "WHERE codigo_marcacion = ? AND fecha_hora BETWEEN ? AND ? " +
-                     "GROUP BY DATE(fecha_hora) " +
-                     "ORDER BY fecha ASC";
+                        "P.nombre, P.apellido, P.codigo_marcacion, " +
+                        "DATE(A.fecha_hora) AS fecha, " +
+                        "DATE_FORMAT(A.fecha_hora, '%d-%m-%Y') AS fecha_formateada, " +
+                        "DATE_FORMAT(A.fecha_hora, '%W') AS dia_semana, " +
+                        "MIN(TIME(A.fecha_hora)) AS entrada, " +
+                        "MAX(TIME(A.fecha_hora)) AS salida " +
+                        "FROM asistencias A " +
+                        "JOIN personal P ON P.codigo_marcacion = A.codigo_marcacion " +
+                        "WHERE A.codigo_marcacion = ? " +
+                        "AND A.fecha_hora BETWEEN ? AND ? " +
+                        "GROUP BY P.nombre, P.apellido, P.codigo_marcacion, DATE(A.fecha_hora) " +
+                        "ORDER BY fecha ASC";
 
         ps = conn.prepareStatement(sql);
         ps.setString(1, codigo_marcacion);
@@ -93,6 +95,16 @@
         ps.setString(3, fechaFinAjustada);
 
         rs = ps.executeQuery();
+
+        if (rs.next()) {
+            out.println("<div style='position:sticky; top:60px; z-index:101; background-color:#212830; padding:10px; border-bottom:1px solid #39424f;'><h5 style='margin:0;'>Empleado: " + rs.getString("nombre") + " " + rs.getString("apellido") + " | código: " + rs.getString("codigo_marcacion") + "</h5></div>");
+        } else {
+            rs.close();
+            ps.close();
+            conn.close();
+            out.println("<h5>No se encontró personal con el código proporcionado.</h5>");
+            return;
+        } 
 %>
         <div class="table-responsive">
             <table class="table table-striped table-dark">

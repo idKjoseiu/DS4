@@ -1,9 +1,9 @@
 body {
   font-family: Arial, sans-serif;
 
-  /*background-image: url("fondos/ciudad.gif");*/
+  background-image: url("fondos/ciudad.gif");
   
-  background-color: #212830;
+  /*background-color: #212830;*/
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -98,7 +98,7 @@ a {
   margin-top: 0; /* El espaciado superior ahora lo da el selector de modo */
 
   box-shadow: 0 4px 10px rgb(4, 221, 245);
-  animation: 3s infinite alternate parpadeo;
+  animation: 4s infinite alternate parpadeo;
 
 }
 
@@ -131,14 +131,21 @@ input[type="file"]::file-selector-button:hover {
 
 
 @keyframes parpadeo {
-  form{
-    box-shadow: 0 4px 10px rgb(4, 215, 239);
+  0% {
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.8); /* dorado elegante */
   }
-
-  to {
-    box-shadow: 0 4px 10px rgb(3, 245, 176);
+  25% {
+    box-shadow: 0 4px 15px rgba(138, 43, 226, 0.8); /* azul violeta */
   }
-  
+  50% {
+    box-shadow: 0 4px 15px rgba(72, 209, 204, 0.8); /* turquesa profundo */
+  }
+  75% {
+    box-shadow: 0 4px 15px rgba(255, 182, 193, 0.8); /* rosa suave */
+  }
+  100% {
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.8); /* volver al dorado */
+  }
 }
 
 .registro h1 {

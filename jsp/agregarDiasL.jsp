@@ -2,7 +2,7 @@
 <%@ page contentType = "text/html;charset=UTF-8" %>
 
 <!DOCTYPE html>
-<html>
+<html>  
 <head>
     <meta charset="UTF-8">
     <title>Días libres</title>
@@ -39,7 +39,7 @@
         </a>
     </nav>
     
-    <div class = "contenedor-central" style = "top: -98px; position: relative;">
+    <div class = "contenedor-central" style = "top: 48px; position: absolute;">
         
         <div class = "modo-selector">
             <a href="../reporte.html" class="modo-btn">Reportes</a>
@@ -58,7 +58,7 @@
                 <label for = "dia"> Detalles: </label>
                 <input style ="width: 300px;" type = "text" name = "detalles" id = "detalles" maxlength=50 placeholder = "Ingrese detalles del dia libre">
             </div>
-            <br>
+            <hr style = "color: white; border: 1px solid;">
             <center>
             <div>
                 <button type = "submit" class="btn btn-primary" name = "accion" value = "agregar"> Agregar </button>
@@ -67,8 +67,9 @@
              </center>
 
             </form>   
-            <hr style = "color: white; border: 2px solid;">
+           
         
+
 
             <script>
                 document.getElementById("FormularioDias").addEventListener("submit", function (e) {
@@ -105,7 +106,7 @@
                     }
                 });
             </script>
-        
+        </div>
     <%@ page import ="java.sql.*" %>
     <%
         request.setCharacterEncoding("UTF-8");
@@ -152,7 +153,7 @@
         }
     %>
 
-    </div>
+    </div>  
     </div>
 </body>
 </html>
