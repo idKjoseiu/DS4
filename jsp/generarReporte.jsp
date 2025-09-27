@@ -1,4 +1,6 @@
-<%@ page import="java.sql.*, java.time.LocalDate, java.time.LocalTime, java.time.format.DateTimeFormatter, java.util.Locale, java.util.List, java.util.ArrayList" %>
+<%@ page import="java.sql.*,java.time.LocalDate,java.time.LocalTime,java.time.format.DateTimeFormatter"%>
+<%@ page import = "java.util.Locale,java.util.List,java.util.ArrayList, java.time.DayOfWeek " %>
+
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html lang="es">
@@ -88,11 +90,29 @@
                         "AND A.fecha_hora BETWEEN ? AND ? " +
                         "GROUP BY P.nombre, P.apellido, P.codigo_marcacion, DATE(A.fecha_hora) " +
                         "ORDER BY fecha ASC";
-
         ps = conn.prepareStatement(sql);
         ps.setString(1, codigo_marcacion);
         ps.setString(2, fechaInicio);
         ps.setString(3, fechaFinAjustada);
+        
+        //lists de dis libres
+        String sqlDiasLibres = "SELECT fecha FROM dias_libres WHERE fecha BETWEEN ? AND ?";
+        List<LocalDate> diasLibres = new ArrayList<>();
+
+        PreparedStatement psDiasLibres = conn.prepareStatement(sqlDiasLibres);
+       
+
+        psDiasLibres.setString(1, fechaInicio);
+        psDiasLibres.setString(2, fechaFin);
+
+        ResultSet rsDiasLibres = psDiasLibres.executeQuery();
+        while (rsDiasLibres.next()) {
+            diasLibres.add(rsDiasLibres.getDate("fecha").toLocalDate());
+        }
+        rsDiasLibres.close();
+        psDiasLibres.close();
+
+       
 
         rs = ps.executeQuery();
 
@@ -130,12 +150,15 @@
 
 
         boolean hayMasResultados = rs.next();
+       
 
         for (LocalDate fechaIteracion = fechaInicioDate; !fechaIteracion.isAfter(fechaFinDate); fechaIteracion = fechaIteracion.plusDays(1)) {
             LocalDate fechaResultado = null;
+
             if (hayMasResultados) {
                 fechaResultado = rs.getDate("fecha").toLocalDate();
             }
+            boolean esDomingo = fechaIteracion.getDayOfWeek() == DayOfWeek.SUNDAY;
 
             if (hayMasResultados && fechaIteracion.equals(fechaResultado)) {
                 //asistió
@@ -162,10 +185,35 @@
                     </tr>
 <%
                 hayMasResultados = rs.next(); // Mover al siguiente registro
-            } else {
+            } else if (diasLibres.contains(fechaIteracion)){
+               //dia feriado
+ %>                         
+                    <tr>
+                        <td><%= fechaIteracion.format(formatoFecha) %></td>
+                        <td><%= fechaIteracion.format(formatoDiaSemana) %></td>
+                        <td></td>
+                        <td></td> 
+                        <td></td>
+                        <td>Dia Feriado/Libre</td> 
+                    </tr>
+<%
+            } else if ( esDomingo == true){
+%>
+                        <tr>
+                            <td><%= fechaIteracion.format(formatoFecha) %></td>
+                            <td><%= fechaIteracion.format(formatoDiaSemana) %></td>
+                            <td></td>
+                            <td></td> 
+                            <td></td>
+                            <td>Domingo</td> 
+                        </tr>
+
+<%
+            }else {
                 //no asistió
                 totalAusencias++;
 %>
+
                     <tr>
                         <td><%= fechaIteracion.format(formatoFecha)+" * " %></td>
                         <td><%= fechaIteracion.format(formatoDiaSemana) %></td>
