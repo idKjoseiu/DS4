@@ -119,7 +119,7 @@
 
         // 4. Crear la estructura de pestañas
 %>
-        <ul class="nav nav-tabs mt-3" id="employeeTabs" role="tablist">
+        <ul class="nav nav-tabs mt-3" id="empleadosTabs" role="tablist">
             <% for (int i = 0; i < personalList.size(); i++) {
                 String[] empleado = personalList.get(i);
                 String codigo = empleado[0];
@@ -131,9 +131,9 @@
             <% } %>
         </ul>
 
-        <div class="tab-content" id="employeeTabsContent">
+        <div class="tab-content" id="empleadosTabsContent">
             <%
-            final LocalTime HORA_ENTRADA_OFICIAL = LocalTime.of(7, 0);
+            final LocalTime HORA_ENTRADA_AM = LocalTime.of(7, 0);
             LocalDate fechaInicioDate = LocalDate.parse(fechaInicio);
             LocalDate fechaFinDate = LocalDate.parse(fechaFin);
             DateTimeFormatter formatoDiaSemana = DateTimeFormatter.ofPattern("EEEE", new Locale("es", "ES"));
@@ -180,7 +180,7 @@
                                 String tardanzaDisplay = "";
                                 if (entradaStr != null) {
                                     LocalTime horaEntradaMarcada = LocalTime.parse(entradaStr);
-                                    if (horaEntradaMarcada.isAfter(HORA_ENTRADA_OFICIAL)) {
+                                    if (horaEntradaMarcada.isAfter(HORA_ENTRADA_AM)) {
                                         tardanzaDisplay = "Sí";
                                     }
                                 }
@@ -259,7 +259,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const prevBtn = document.getElementById('prevTab');
             const nextBtn = document.getElementById('nextTab');
-            const tabs = document.querySelectorAll('#employeeTabs .nav-link');
+            const tabs = document.querySelectorAll('#empleadosTabs .nav-link');
 
             function getActiveTabIndex() {
                 for (let i = 0; i < tabs.length; i++) {

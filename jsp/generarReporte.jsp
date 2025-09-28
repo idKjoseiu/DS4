@@ -141,7 +141,7 @@
                 <tbody>
 <%
         
-        final LocalTime HORA_ENTRADA_OFICIAL = LocalTime.of(7, 0);
+        final LocalTime HORA_ENTRADA_AM = LocalTime.of(7, 0);
 
         LocalDate fechaInicioDate = LocalDate.parse(fechaInicio);
         LocalDate fechaFinDate = LocalDate.parse(fechaFin);
@@ -167,7 +167,7 @@
 
                 if (entradaStr != null) {
                     LocalTime horaEntradaMarcada = LocalTime.parse(entradaStr);
-                    if (horaEntradaMarcada.isAfter(HORA_ENTRADA_OFICIAL)) {
+                    if (horaEntradaMarcada.isAfter(HORA_ENTRADA_AM)) {
                         tardanzaDisplay = "Sí";
                         totalTardanzas++;
                     } else {

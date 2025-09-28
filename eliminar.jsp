@@ -49,19 +49,8 @@
             <h1>Búsqueda de Personal</h1>
             <form action="eliminar.jsp" method="post">
                 <label for="cedula">Cédula</label>
-                <input type="text" pattern="[0-9]{1}-[0-9]{4}-[0-9]{4}" title="Formato: 1-2345-6789" maxlength="11" id="cedula" name="cedula" placeholder="0-0000-0000" required>
-                <script>
-                    const cedula = document.getElementById("cedula");
-                    cedula.addEventListener("input", function () {
-                        let valor = this.value.replace(/\D/g, "");
-                        if (valor.length > 1 && valor.length <= 5) {
-                            valor = valor.slice(0, 1) + "-" + valor.slice(1);
-                        } else if (valor.length > 5) {
-                            valor = valor.slice(0, 1) + "-" + valor.slice(1, 5) + "-" + valor.slice(5, 9);
-                        }
-                        this.value = valor;
-                    });
-                </script>
+                <input type="text" pattern="[0-9-]*" maxlength="15" id="cedula" name="cedula" placeholder="0-0000-0000" required oninput="this.value = this.value.replace(/[^0-9-]/g, '')">
+               
                 <button type="submit" class="btn btn-primary mt-3">Buscar</button>
             </form>
         </div>
@@ -198,18 +187,18 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <input type="hidden" name="cedulaOriginal" value="<%= cedulaOriginal %>">
                                     <label for="Nuevacedula">Cédula</label>
-                                    <input style="width: 100px;" type="text" pattern="[0-9]{1}-[0-9]{4}-[0-9]{4}" title="Formato: 1-2345-6789" maxlength="11" id="Nuevacedula" name="Nuevacedula" value="<%= rs.getString("cedula") %>">
+                                    <input style="width: 100px;" type="text" pattern="[0-9-]*" maxlength="15" id="Nuevacedula" name="Nuevacedula" value="<%= rs.getString("cedula") %>" oninput="this.value = this.value.replace(/[^0-9-]/g, '')">
 
                                     <label for="nombre">Nombre</label>
-                                    <input style="width: 150px;" type="text" maxlength="20" id="nombre" name="nombre" value="<%= rs.getString("nombre") %>">
+                                    <input style="width: 150px;" type="text" pattern="[a-zA-Z\s]*" maxlength="20" id="nombre" name="nombre" value="<%= rs.getString("nombre") %>" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
                                 </div>
 
                                 <div class="d-flex align-items-center gap-3">
                                     <label for="apellido">Apellido</label>
-                                    <input style="width: 150px;" type="text" maxlength="20" id="apellido" name="apellido" value="<%= rs.getString("apellido") %>">
+                                    <input style="width: 150px;" type="text" pattern="[a-zA-Z\s]*" maxlength="20" id="apellido" name="apellido" value="<%= rs.getString("apellido") %>" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
 
                                     <label for="codigo_marcacion">Código</label>
-                                    <input type="text" maxlength="4" style="width: 50px" id="codigo_marcacion" name="codigo_marcacion" value="<%= rs.getString("codigo_marcacion") %>">
+                                    <input type="text" pattern="[0-9]*" maxlength="4" style="width: 50px" id="codigo_marcacion" name="codigo_marcacion" value="<%= rs.getString("codigo_marcacion") %>" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
 
                                     <button type="submit" class="btn btn-success btn-lg" name="accion" value="Guardar">Guardar</button>
                                 </div>

@@ -85,7 +85,7 @@
             <div>
                 <label>Código de Marcación</label>
                 <input style="width: 70px;" type="text" id="codigo_marcacion" name="codigo_marcacion"
-                    placeholder="0000">
+                    placeholder="0000" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             </div>
             <center>
                 <div>

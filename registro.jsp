@@ -48,28 +48,17 @@
             <h1>Registro de personal</h1>
             <form method="post">
                 <label for="cedula">Cédula</label>
-                <input type="text" pattern="[0-9]{1}-[0-9]{4}-[0-9]{4}" maxlength="11" id="cedula" name="cedula" placeholder="0-0000-0000" required>
-                <script>
-                    const cedula = document.getElementById("cedula");
-                    cedula.addEventListener("input", function () {
-                        let valor = this.value.replace(/\D/g, "");
-                        if (valor.length > 1 && valor.length <= 5) {
-                            valor = valor.slice(0, 1) + "-" + valor.slice(1);
-                        } else if (valor.length > 5) {
-                            valor = valor.slice(0, 1) + "-" + valor.slice(1, 5) + "-" + valor.slice(5, 9);
-                        }
-                        this.value = valor;
-                    });
-                </script>
+                <input type="text" pattern="[0-9-]*" maxlength="15" id="cedula" name="cedula" placeholder="0-0000-0000" required oninput="this.value = this.value.replace(/[^0-9-]/g, '')">
+                
 
                 <label for="nombre">Nombre:</label>
-                <input type="text" pattern="[^0-9]*" maxlength="20" id="nombre" name="nombre" placeholder="Escribe tu nombre" required>
+                <input type="text" pattern="[a-zA-Z\s]*" maxlength="20" id="nombre" name="nombre" placeholder="Escribe tu nombre" required oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
                 
                 <label for="apellido">Apellido:</label>
-                <input type="text" pattern="[^0-9]*" maxlength="20" id="apellido" name="apellido" placeholder="Escribe tu apellido" required>
+                <input type="text" pattern="[a-zA-Z\s]*" maxlength="20" id="apellido" name="apellido" placeholder="Escribe tu apellido" required oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
                 
                 <label for="codigo_marcacion">Código de Marcación:</label>
-                <input type="text" pattern="[0-9]+" maxlength="4" style="width: 50px" id="codigo_marcacion" name="codigo_marcacion" placeholder="0000" required>
+                <input type="text" pattern="[0-9]+" maxlength="4" style="width: 50px" id="codigo_marcacion" name="codigo_marcacion" placeholder="0000" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 
                 <button type="submit" class="btn btn-primary mt-2">Registrar</button>
             </form>
