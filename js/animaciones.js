@@ -58,21 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 5. Animación para abrir el contenedor de gráficos
-    const graficoContainer = document.getElementById('graficoContainer');
-    if (graficoContainer) {
-        graficoContainer.style.opacity = 0;
-        const observer = new MutationObserver(() => {
-            if (graficoContainer.style.display !== 'none') {
-                anime({
-                    targets: graficoContainer,
-                    opacity: [0, 1],
-                    translateY: [20, 0],
-                    duration: 800,
-                    easing: "easeOutExpo"
-                });
-            }
-        });
-        observer.observe(graficoContainer, { attributes: true, attributeFilter: ['style'] });
-    }
+    // 5. Animación para el contenedor de gráficos
+    // Esta lógica fue movida directamente a la función toggleGrafico() en generarReporte.jsp
+    // para un mejor control y evitar conflictos. Se deja este comentario como referencia.
 });

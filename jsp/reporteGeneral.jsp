@@ -1,4 +1,5 @@
-<%@ page import="java.sql.*, java.time.LocalDate, java.time.LocalTime, java.time.format.DateTimeFormatter, java.util.Locale, java.util.List, java.util.ArrayList, java.time.DayOfWeek" %>
+<%@ page import="java.sql.*, java.time.LocalDate, java.time.LocalTime, java.time.format.DateTimeFormatter, java.util.*" %>
+<%@ page import="java.time.DayOfWeek" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html lang="es">
@@ -134,6 +135,17 @@
         <div class="tab-content" id="empleadosTabsContent">
             <%
             final LocalTime HORA_ENTRADA_AM = LocalTime.of(7, 0);
+            final LocalTime HORA_ENTRADA_PM = LocalTime.of(12, 20);
+
+            // Definir los códigos de marcación para cada turno
+            final Set<String> codigosTurnoAM = new HashSet<>(Arrays.asList(
+                "13", "2", "11", "7", "31", "3", "6", "8", "5", "30", "4", "9", "36", "12", "45"
+            ));
+            final Set<String> codigosTurnoPM = new HashSet<>(Arrays.asList(
+                "41", "15", "26", "21", "22", "40", "16", "23", "18", "42", "19", "33", "44"
+            ));
+
+
             LocalDate fechaInicioDate = LocalDate.parse(fechaInicio);
             LocalDate fechaFinDate = LocalDate.parse(fechaFin);
             DateTimeFormatter formatoDiaSemana = DateTimeFormatter.ofPattern("EEEE", new Locale("es", "ES"));
@@ -143,6 +155,19 @@
                 String[] empleado = personalList.get(i);
                 String codigo_marcacion = empleado[0];
                 String nombreCompleto = empleado[1] + " " + empleado[2];
+
+                // Determinar la hora de entrada correcta para el empleado actual
+                LocalTime horaEntradaCorrecta;
+                if (codigosTurnoAM.contains(codigo_marcacion)) {
+                    horaEntradaCorrecta = HORA_ENTRADA_AM;
+                } else if (codigosTurnoPM.contains(codigo_marcacion)) {
+                    horaEntradaCorrecta = HORA_ENTRADA_PM;
+                } else {
+                    // Por defecto, se usa la de la mañana si el código no está en ninguna lista.
+                    horaEntradaCorrecta = HORA_ENTRADA_AM;
+                }
+                int totalTardanzas = 0;
+                int totalAusencias = 0;
 
                 psAsistencia.setString(1, codigo_marcacion);
                 psAsistencia.setString(2, fechaInicio);
@@ -167,6 +192,7 @@
                         </thead>
                         <tbody>
                         <%
+
                         for (LocalDate fechaIteracion = fechaInicioDate; !fechaIteracion.isAfter(fechaFinDate); fechaIteracion = fechaIteracion.plusDays(1)) {
                             LocalDate fechaResultado = null;
                             if (hayMasResultados) {
@@ -180,8 +206,9 @@
                                 String tardanzaDisplay = "";
                                 if (entradaStr != null) {
                                     LocalTime horaEntradaMarcada = LocalTime.parse(entradaStr);
-                                    if (horaEntradaMarcada.isAfter(HORA_ENTRADA_AM)) {
+                                    if (horaEntradaMarcada.isAfter(horaEntradaCorrecta)) {
                                         tardanzaDisplay = "Sí";
+                                        totalTardanzas++;
                                     }
                                 }
                         %>
@@ -218,14 +245,15 @@
                             </tr>
                         <%
                             } else {
+                                totalAusencias++;
                         %>
                             <tr>
-                                <td><%= fechaIteracion.format(formatoFecha) + " * " %></td>
+                                <td><%= fechaIteracion.format(formatoFecha) %></td>
                                 <td><%= fechaIteracion.format(formatoDiaSemana) %></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td>No Asistió</td>
+                                <td class="text-danger fw-bold">No Asistió</td>
                             </tr>
                         <%
                             }
@@ -234,6 +262,11 @@
                         %>
                         </tbody>
                     </table>
+                </div>
+                <div class="mt-3 p-3 bg-dark rounded">
+                    <h6>Resumen del Empleado:</h6>
+                    <p class="mb-1"><strong>Total de Tardanzas:</strong> <%= totalTardanzas %></p>
+                    <p class="mb-0"><strong>Total de Ausencias:</strong> <%= totalAusencias %></p>
                 </div>
             </div>
             <%

@@ -1,6 +1,6 @@
 <%@ page import="java.sql.*,java.time.LocalDate,java.time.LocalTime,java.time.format.DateTimeFormatter"%>
-<%@ page import = "java.util.Locale,java.util.List,java.util.ArrayList, java.time.DayOfWeek " %>
-
+<%@ page import = "java.util.Locale,java.util.List,java.util.ArrayList, java.time.DayOfWeek, java.util.Map, java.util.HashMap, java.util.stream.Collectors, java.util.Arrays" %>
+<%@ page import="java.time.LocalDateTime, java.util.Set, java.util.HashSet" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html lang="es">
@@ -43,7 +43,7 @@
             <h2>Resultados del Reporte</h2>
             <div>
                     <a href="#" onclick="window.close(); return false;" class="btn btn-secondary">Volver</a>
-                    <a href="#" onclick="mostrarGrafico();" class="btn btn-primary">Ver Gráfico</a>
+                    <a href="#" id="btnGrafico" onclick="toggleGrafico(); return false;" class="btn btn-primary">Ver Gráfico</a>
             </div>        
     </div>
         
@@ -77,19 +77,14 @@
             stmt.execute("SET lc_time_names = 'es_ES'");
         }
 
-        String sql = "SELECT " +
-                        "P.nombre, P.apellido, P.codigo_marcacion, " +
-                        "DATE(A.fecha_hora) AS fecha, " +
-                        "DATE_FORMAT(A.fecha_hora, '%d-%m-%Y') AS fecha_formateada, " +
-                        "DATE_FORMAT(A.fecha_hora, '%W') AS dia_semana, " +
-                        "MIN(TIME(A.fecha_hora)) AS entrada, " +
-                        "MAX(TIME(A.fecha_hora)) AS salida " +
-                        "FROM asistencias A " +
-                        "JOIN personal P ON P.codigo_marcacion = A.codigo_marcacion " +
-                        "WHERE A.codigo_marcacion = ? " +
-                        "AND A.fecha_hora BETWEEN ? AND ? " +
-                        "GROUP BY P.nombre, P.apellido, P.codigo_marcacion, DATE(A.fecha_hora) " +
-                        "ORDER BY fecha ASC";
+        // Se obtienen todos los registros, no solo min y max, para manejar turnos partidos.
+        String sql = "SELECT P.nombre, P.apellido, P.codigo_marcacion, A.fecha_hora " +
+                     "FROM asistencias A " +
+                     "JOIN personal P ON P.codigo_marcacion = A.codigo_marcacion " +
+                     "WHERE A.codigo_marcacion = ? " +
+                     "AND A.fecha_hora BETWEEN ? AND ? " +
+                     "ORDER BY A.fecha_hora ASC";
+
         ps = conn.prepareStatement(sql);
         ps.setString(1, codigo_marcacion);
         ps.setString(2, fechaInicio);
@@ -116,15 +111,35 @@
 
         rs = ps.executeQuery();
 
-        if (rs.next()) {
-            out.println("<div style='position:sticky; top:60px; z-index:101; background-color:#212830; padding:10px; border-bottom:1px solid #39424f;'><h5 style='margin:0;'>Empleado: " + rs.getString("nombre") + " " + rs.getString("apellido") + " | código: " + rs.getString("codigo_marcacion") + "</h5></div>");
-        } else {
+        // Agrupar todos los registros por fecha para un procesamiento más fácil.
+        Map<LocalDate, List<LocalTime>> asistenciasPorFecha = new HashMap<>();
+        String nombreEmpleado = "";
+        String apellidoEmpleado = "";
+
+        while (rs.next()) {
+            if (nombreEmpleado.isEmpty()) {
+                nombreEmpleado = rs.getString("nombre");
+                apellidoEmpleado = rs.getString("apellido");
+            }
+            LocalDateTime fechaHora = rs.getTimestamp("fecha_hora").toLocalDateTime();
+            // Reemplazo de lambda para compatibilidad con Java < 1.8
+            LocalDate fecha = fechaHora.toLocalDate();
+            List<LocalTime> tiempos = asistenciasPorFecha.get(fecha);
+            if (tiempos == null) {
+                tiempos = new ArrayList<>();
+                asistenciasPorFecha.put(fecha, tiempos);
+            }
+            tiempos.add(fechaHora.toLocalTime());
+        }
+
+        if (nombreEmpleado.isEmpty()) {
             rs.close();
             ps.close();
             conn.close();
             out.println("<h5>No se encontró personal con el código proporcionado.</h5>");
             return;
-        } 
+        }
+        out.println("<div style='position:sticky; top:60px; z-index:101; background-color:#212830; padding:10px; border-bottom:1px solid #39424f;'><h5 style='margin:0;'>Empleado: " + nombreEmpleado + " " + apellidoEmpleado + " | código: " + codigo_marcacion + "</h5></div>");
 %>
         <div class="table-responsive">
             <table class="table table-striped table-dark rounded-3 overflow-hidden">
@@ -140,87 +155,101 @@
                 </thead>
                 <tbody>
 <%
-        
+        // Horarios de trabajo. Estos podrían venir de la base de datos en un futuro.
         final LocalTime HORA_ENTRADA_AM = LocalTime.of(7, 0);
+        final LocalTime HORA_ENTRADA_PM = LocalTime.of(12, 20);
+
+        // Definir los códigos de marcación para cada turno
+        final Set<String> codigosTurnoAM = new HashSet<>(Arrays.asList(
+            "13", "2", "11", "7", "31", "3", "6", "8", "5", "30", "4", "9", "36", "12", "45"
+        ));
+        final Set<String> codigosTurnoPM = new HashSet<>(Arrays.asList(
+            "41", "15", "26", "21", "22", "40", "16", "23", "18", "42", "19", "33", "44"
+        ));
+
+        // Determinar la hora de entrada correcta para el empleado actual
+        LocalTime horaEntradaCorrecta;
+        if (codigosTurnoAM.contains(codigo_marcacion)) {
+            horaEntradaCorrecta = HORA_ENTRADA_AM;
+        } else if (codigosTurnoPM.contains(codigo_marcacion)) {
+            horaEntradaCorrecta = HORA_ENTRADA_PM;
+        } else {
+            // Si el código no está en ninguna lista, se usa la de la mañana por defecto.
+            // O se podría mostrar un aviso.
+            horaEntradaCorrecta = HORA_ENTRADA_AM;
+        }
 
         LocalDate fechaInicioDate = LocalDate.parse(fechaInicio);
         LocalDate fechaFinDate = LocalDate.parse(fechaFin);
         DateTimeFormatter formatoDiaSemana = DateTimeFormatter.ofPattern("EEEE", new Locale("es", "ES"));
         DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-
-        boolean hayMasResultados = rs.next();
-       
-
         for (LocalDate fechaIteracion = fechaInicioDate; !fechaIteracion.isAfter(fechaFinDate); fechaIteracion = fechaIteracion.plusDays(1)) {
-            LocalDate fechaResultado = null;
-
-            if (hayMasResultados) {
-                fechaResultado = rs.getDate("fecha").toLocalDate();
-            }
+            String diaSemana = fechaIteracion.format(formatoDiaSemana);
+            String fechaFormateada = fechaIteracion.format(formatoFecha);
             boolean esDomingo = fechaIteracion.getDayOfWeek() == DayOfWeek.SUNDAY;
+            boolean esDiaLibre = diasLibres.contains(fechaIteracion);
 
-            if (hayMasResultados && fechaIteracion.equals(fechaResultado)) {
-                //asistió
-                String entradaStr = rs.getString("entrada");
+            List<LocalTime> marcasDelDia = asistenciasPorFecha.get(fechaIteracion);
+
+            if (marcasDelDia != null && !marcasDelDia.isEmpty()) {
+                // El empleado asistió este día.
+                LocalTime primeraMarca = marcasDelDia.get(0);
+                LocalTime ultimaMarca = marcasDelDia.get(marcasDelDia.size() - 1);
+
+                // Lógica para determinar si es tardanza.
                 String tardanzaDisplay = "";
-
-                if (entradaStr != null) {
-                    LocalTime horaEntradaMarcada = LocalTime.parse(entradaStr);
-                    if (horaEntradaMarcada.isAfter(HORA_ENTRADA_AM)) {
-                        tardanzaDisplay = "Sí";
-                        totalTardanzas++;
-                    } else {
-                        totalAsistenciasPuntuales++;
-                    }
+                if (primeraMarca.isAfter(horaEntradaCorrecta)) {
+                    tardanzaDisplay = "Sí";
+                    totalTardanzas++;
+                } else {
+                    totalAsistenciasPuntuales++;
                 }
 %>
                     <tr>
-                        <td><%= rs.getString("fecha_formateada") %></td>
-                        <td><%= rs.getString("dia_semana") %></td>
-                        <td><%= entradaStr %></td>
+                        <td><%= fechaFormateada %></td>
+                        <td><%= diaSemana %></td>
+                        <td><%= primeraMarca %></td>
                         <td><%= tardanzaDisplay %></td> 
-                        <td><%= rs.getString("salida") %></td>
+                        <td><%= (primeraMarca.equals(ultimaMarca)) ? "" : ultimaMarca.toString() %></td>
                         <td></td> 
                     </tr>
 <%
-                hayMasResultados = rs.next(); // Mover al siguiente registro
-            } else if (diasLibres.contains(fechaIteracion)){
-               //dia feriado
+            } else if (esDiaLibre) {
+               // Día feriado o libre
  %>                         
                     <tr>
-                        <td><%= fechaIteracion.format(formatoFecha) %></td>
-                        <td><%= fechaIteracion.format(formatoDiaSemana) %></td>
+                        <td><%= fechaFormateada %></td>
+                        <td><%= diaSemana %></td>
                         <td></td>
                         <td></td> 
                         <td></td>
                         <td>Dia Feriado/Libre</td> 
                     </tr>
 <%
-            } else if ( esDomingo == true){
+            } else if (esDomingo) {
 %>
                         <tr>
-                            <td><%= fechaIteracion.format(formatoFecha) %></td>
-                            <td><%= fechaIteracion.format(formatoDiaSemana) %></td>
+                            <td><%= fechaFormateada %></td>
+                            <td><%= diaSemana %></td>
                             <td></td>
                             <td></td> 
                             <td></td>
                             <td>Domingo</td> 
                         </tr>
 
-<%
-            }else {
-                //no asistió
+<%          
+            } else {
+                // No asistió y no era domingo ni día libre.
                 totalAusencias++;
 %>
-
                     <tr>
-                        <td><%= fechaIteracion.format(formatoFecha)+" * " %></td>
-                        <td><%= fechaIteracion.format(formatoDiaSemana) %></td>
+                        <td><%= fechaFormateada %></td>
+                        <td><%= diaSemana %></td>
                         <td></td>
                         <td></td> 
                         <td></td>
-                        <td>No Asistió</td> 
+                        <td class="text-danger fw-bold">No Asistió</td> 
                     </tr>
 <%
             }
@@ -257,66 +286,137 @@
 <script>
     let miGrafico = null;
 
-    function mostrarGrafico() {
+    function toggleGrafico() {
         const container = document.getElementById('graficoContainer');
-        container.style.display = 'block';
+        const btn = document.getElementById('btnGrafico');
+        const isVisible = container.style.display === 'block';
 
-        // Desplaza cuadno se da a ver grafico
-        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-        // Si el gráfico ya existe, no hacer nada más.
-        if (miGrafico) {
-            return;
-        }
-
-        const ctx = document.getElementById('graficoAsistencias').getContext('2d');
-        
-        miGrafico = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Asistencias Puntuales', 'Tardanzas', 'Ausencias'],
-                datasets: [{
-                    label: 'Resumen de Asistencia',
-                    data: [<%= totalAsistenciasPuntuales %>, <%= totalTardanzas %>, <%= totalAusencias %>],
-                    backgroundColor: [
-                        'rgba(40, 167, 69, 0.7)',  // Verde para puntuales
-                        'rgba(255, 193, 7, 0.7)',   // Amarillo para tardanzas
-                        'rgba(220, 53, 69, 0.7)'    // Rojo para ausencias
-                    ],
-                    borderColor: [
-                        'rgba(40, 167, 69, 1)',
-                        'rgba(255, 193, 7, 1)',
-                        'rgba(220, 53, 69, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            color: '#f6f5f5' // Color del texto de la leyenda
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Resumen de Asistencia del Periodo',
-                        color: '#f6f5f5', // Color del título
-                        font: { size: 18 }
-                    }
+        if (isVisible) {
+            // Ocultar con animación
+            anime({
+                targets: container,
+                opacity: [1, 0],
+                translateY: [0, 20],
+                duration: 500,
+                easing: 'easeInExpo',
+                complete: function() {
+                    container.style.display = 'none';
+                    btn.textContent = 'Ver Gráfico';
                 }
+            });
+        } else {
+            // Mostrar con animación
+            container.style.display = 'block';
+            container.style.opacity = '0'; // Empezar invisible para el fade-in
+            btn.textContent = 'Ocultar Gráfico';            
+            anime({
+                targets: container,
+                opacity: [0, 1],
+                translateY: [20, 0],
+                duration: 900, // Un poco más largo para un efecto más suave
+                easing: 'easeOutQuint', // Una curva de animación más pronunciada
+                complete: () => container.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            });
+
+            // Crea el gráfico solo si no existe
+            if (!miGrafico) {
+                // --- MEJORA: Plugin para mostrar texto en el centro de la dona ---
+                const doughnutText = {
+                    id: 'doughnutText',
+                    beforeDraw(chart, args, options) {
+                        const { ctx, data } = chart;
+                        const { width, height } = chart.chartArea;
+                        
+                        ctx.save();
+                        ctx.font = 'bold 30px sans-serif';
+                        ctx.fillStyle = '#f6f5f5';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        
+                        const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        
+                        // Dibuja el número total
+                        ctx.fillText(total, width / 2, height / 2 - 10);
+                        
+                        // Dibuja la palabra "Días" debajo
+                        ctx.font = '16px sans-serif';
+                        ctx.fillText('Días', width / 2, height / 2 + 20);
+                        ctx.restore();
+                    }
+                };
+
+                const ctx = document.getElementById('graficoAsistencias').getContext('2d');
+                const datos = [<%= totalAsistenciasPuntuales %>, <%= totalTardanzas %>, <%= totalAusencias %>];
+                const total = datos.reduce((a, b) => a + b, 0);
+
+                miGrafico = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Asistencias Puntuales', 'Tardanzas', 'Ausencias'],
+                        datasets: [{
+                            label: 'Días',
+                            data: datos,
+                            backgroundColor: [
+                                'rgba(40, 167, 69, 0.7)',  // Verde para puntuales
+                                'rgba(255, 193, 7, 0.7)',   // Amarillo para tardanzas
+                                'rgba(220, 53, 69, 0.7)'    // Rojo para ausencias
+                            ],
+                            borderColor: [
+                                'rgba(40, 167, 69, 1)',
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(220, 53, 69, 1)'
+                            ],
+                            borderWidth: 1,
+                            hoverBorderWidth: 3, // Borde más grueso al pasar el mouse
+                            hoverBorderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        cutout: '65%',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true
+                        },
+                    },
+                    plugins: [doughnutText, { // Se registran los plugins y sus configuraciones aquí
+                        id: 'custom_tooltips', // ID para la configuración de plugins internos
+                        beforeInit: (chart) => {
+                            chart.options.plugins.legend = {
+                                position: 'top',
+                                labels: { color: '#f6f5f5' }
+                            };
+                            chart.options.plugins.title = {
+                                display: true,
+                                text: 'Resumen de Asistencia del Periodo',
+                                color: '#f6f5f5',
+                                font: { size: 18 }
+                            };
+                            chart.options.plugins.tooltip = {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) { label += ': '; }
+                                        const value = context.raw;
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        label += `${value} (${percentage}%)`;
+                                        return label;
+                                    }
+                                }
+                            };
+                        }
+                    }]
+                });
             }
-        });
+        }
     }
 </script>
 
 <!-- animaciones -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
-        <!-- Tu archivo JS -->
+<!-- Tu archivo JS -->
 <script src="../js/animaciones.js"></script>
 </body>
 </html>
